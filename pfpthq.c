@@ -86,13 +86,10 @@ pfpthq_pool_t* pfpthq_init(const char* _pool_name, int _max)
 	new_pool->pool_name = pfcq_strdup(_pool_name);
 	if (unlikely(!new_pool->pool_name))
 		panic("strdup");
-	if (_max == -1)
-	{
-		new_pool->max_workers_count = sysconf(_SC_NPROCESSORS_ONLN);
-		if (unlikely(new_pool->max_workers_count == -1))
-			new_pool->max_workers_count = 1;
-	} else
-		new_pool->max_workers_count = _max;
+	if (_max != 0)
+		new_pool->max_workers_count = pfcq_hint_cpus(_max);
+	else
+		new_pool->max_workers_count = 0;
 	if (unlikely(pthread_mutex_init(&new_pool->workers_count_lock, NULL)))
 		panic("pthread_mutex_init");
 	if (unlikely(pthread_mutex_init(&new_pool->workers_global_lock, NULL)))
